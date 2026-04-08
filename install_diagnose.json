@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-04-06 23:46:45",
+  "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\leiti\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "results": [
+    {
+      "ok": true,
+      "title": "系统信息",
+      "detail": "Windows-11-10.0.26200-SP0 | AMD64 | Python=3.14.0 | exe=C:\\Users\\leiti\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "Python 版本",
+      "detail": "OK（3.14.0）",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "pip 可用",
+      "detail": "pip 25.2 from C:\\Users\\leiti\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\pip (python 3.14)",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "requirements.txt",
+      "detail": "路径：D:\\新版本\\lianhua1\\QuantPro_Hummingbot_OKX\\requirements.txt | 条目数：14",
+      "fix": "如缺失请从发布包补齐 requirements.txt。"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：PyQt5",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": false,
+      "title": "依赖库：PyQtChart",
+      "detail": "缺失",
+      "fix": "点“一键安装 Python 依赖”。"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：requests",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：dotenv",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：numpy",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": false,
+      "title": "依赖库：pandas",
+      "detail": "缺失",
+      "fix": "点“一键安装 Python 依赖”。"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：matplotlib",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：websockets",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：cryptography",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "依赖库：psutil",
+      "detail": "已安装",
+      "fix": "—"
+    },
+    {
+      "ok": true,
+      "title": "可选库：TA-Lib（用于 PMM-NEURAL）",
+      "detail": "已安装",
+      "fix": "若 pip 安装 TA-Lib 失败：可先关闭 PMM-NEURAL；或手动安装官方 TA-Lib C 库后再 pip 安装；仍失败请邮件联系。"
+    }
+  ],
+  "fail_count": 2
+}

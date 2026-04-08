@@ -1,0 +1,16 @@
+PyQt5==5.15.10
+PyQtChart==5.15.6
+matplotlib==3.8.2
+requests[socks]==2.31.0
+python-dotenv==1.0.0
+pandas==2.1.4
+numpy==1.24.3
+websockets==12.0
+python-dateutil==2.8.2
+urllib3==1.26.18
+certifi==2023.11.17
+cryptography==41.0.7
+psutil==5.9.8
+
+# PMM-NEURAL：TA-Lib 16 维（多数平台有预编译 wheel；若 pip 失败再装官方 C 库 https://ta-lib.org/install.html ）
+TA-Lib==0.6.8

@@ -1,0 +1,14 @@
+{
+  "name": "PMM+_ETH_USDT_SWAP",
+  "strategy": "PMM+",
+  "params": {
+    "spread_bps": 20.0,
+    "order_size": "0.001",
+    "refresh_ticks": 3,
+    "max_inventory": 0.01,
+    "slippage_pct": 0.5,
+    "regime_autopilot": true,
+    "evolve_autoload": true
+  },
+  "exported_ts": 1775408748794
+}

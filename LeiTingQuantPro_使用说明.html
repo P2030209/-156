@@ -1,0 +1,663 @@
+
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+      color: #e2e8f0;
+      background: #0f172a;
+      padding: 18px 22px;
+    }
+    h1 { color: #38bdf8; font-size: 24px; margin: 8px 0 12px; }
+    h2 { color: #38bdf8; font-size: 19px; margin: 20px 0 10px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+    h3 { color: #93c5fd; font-size: 16px; margin: 14px 0 8px; }
+    p, li { font-size: 13px; }
+    code {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: #f8fafc;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 8px 0;
+    }
+    .tip { color: #34d399; }
+    .warn { color: #fbbf24; }
+    .err { color: #f87171; }
+    ul { margin-top: 6px; }
+    a { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+  <h1>LeiTingQuantPro 全功能作战手册（完整版）</h1>
+  <p>这是一份按“培训教材”标准整理的手册：分级教学、界面编号、逐控件说明、逐策略模板、逐故障处理，目标是让新手也能按步骤独立完成配置、运行和排障。</p>
+
+  <h2>0.1 通俗速读版（先看这个就能用）</h2>
+  <div class="card">
+    <ul>
+      <li><b>你要做什么？</b>：先能连上OKX看行情 → 再能安全下单 → 再跑策略 → 最后再上AI与实盘。</li>
+      <li><b>你该点哪里？</b>：配置在 <b>文件→系统配置</b>；启动在 <b>1区</b>；看行情在 <b>2区</b>；看挂单在 <b>3区</b>；看报错在 <b>底栏</b>。</li>
+      <li><b>什么算成功？</b>：2区价格/K线在动；3区挂单能看到变化；底栏没有连续报错。</li>
+      <li><b>真盘怎么开？</b>：顶栏切实盘 + 系统配置里取消模拟交易 + 选“已接入实单策略”启动（详见第 4.5 章）。</li>
+      <li><b>最容易踩坑</b>：选了 <code>AI-ALGO</code> 会提示“未接入实单”；那不是坏了，是保护机制（用 <code>AI-LIVE</code> 才能AI真盘）。</li>
+    </ul>
+  </div>
+
+  <h2>0. 界面定位编号（统一语言）</h2>
+  <p class="tip">一句话：把界面分成“1区调参数、2区看行情、3区看挂单”，你就不会迷路。</p>
+  <div class="card">
+    <ul>
+      <li><b>1区（左）</b>：策略下拉、参数组、风控组、启动/停止。</li>
+      <li><b>2区（中）</b>：引擎状态、行情识别、K线周期、实时价格、复盘。</li>
+      <li><b>3区（右）</b>：订单簿、资产摘要、快捷下单、当前挂单。</li>
+      <li><b>顶栏</b>：交易对、模拟/实盘、代理、AI状态、连接状态。</li>
+      <li><b>底栏</b>：日志输出与关键字过滤。</li>
+    </ul>
+  </div>
+
+  <h2>1. 分级教程A：新手（目标：跑通不出错）</h2>
+  <p class="tip">一句话：新手只做一件事——先用模拟盘把“能看行情 + 能挂单 + 无连续报错”跑通。</p>
+  <div class="card">
+    <h3>步骤A1（顶栏）确认模式与交易对</h3>
+    <ol>
+      <li>模式先选“模拟盘”。</li>
+      <li>交易对先用流动性高的合约（建议 <code>ETH-USDT-SWAP</code>）。</li>
+    </ol>
+
+    <h3>步骤A2（文件菜单）完成系统配置</h3>
+    <ol>
+      <li>打开 <code>文件 → 系统配置</code>。</li>
+      <li>依次填写：API Key / Secret Key / Passphrase。</li>
+      <li>勾选模拟交易，点“测试连接”。</li>
+      <li>网络不通时填本机代理（如 <code>http://127.0.0.1:7890</code>），再保存。</li>
+    </ol>
+
+    <h3>步骤A3（1区）启动 PMM 保守模板</h3>
+    <ol>
+      <li>1区策略选 <code>PMM</code>。</li>
+      <li>填：<code>spread_bps=50</code>、<code>refresh_ticks=8</code>、<code>order_size=0.001</code>。</li>
+      <li>点 <code>启动策略</code>。</li>
+    </ol>
+
+    <h3>步骤A4（2区+3区+底栏）验证三件事</h3>
+    <ol>
+      <li>2区：实时价格变化、K线不冻结。</li>
+      <li>3区：挂单列表有新增/撤销动作。</li>
+      <li>底栏：无持续报错（连续 3 次及以上同类错误视为异常）。</li>
+    </ol>
+  </div>
+
+  <h2>2. 分级教程B：进阶（目标：提升稳定性和收益质量）</h2>
+  <p class="tip">一句话：进阶只做两件事——加风控约束（PMM+）+ 用模板/AI把有效参数沉淀下来。</p>
+  <div class="card">
+    <h3>步骤B1（1区）升级 PMM+</h3>
+    <ol>
+      <li>切换 <code>PMM+</code>，增加 <code>max_inventory</code> 与 <code>slippage_pct</code> 约束。</li>
+      <li>建议先用均衡模板跑 2~4 小时，再决定是否提速。</li>
+    </ol>
+
+    <h3>步骤B2（工具）AI 策略助手调参</h3>
+    <ol>
+      <li>打开 <code>工具 → AI 策略助手</code>。</li>
+      <li>让 AI 输出 PMM 建议参数，写回1区。</li>
+      <li>观察 30~60 分钟成交节奏与撤单比率。</li>
+    </ol>
+
+    <h3>步骤B3（工具）导出模板沉淀</h3>
+    <ol>
+      <li>导出“ETH-均衡模板”“BTC-保守模板”等。</li>
+      <li>建立策略模板命名规则，避免覆盖混乱。</li>
+    </ol>
+  </div>
+
+  <h2>3. 分级教程C：实盘（目标：可控上线）</h2>
+  <p class="warn">一句话：实盘不是“点一下就上”，而是“保守小仓位上线 + 严格值班检查 + 异常立即停”。</p>
+  <div class="card">
+    <h3>步骤C1（上线前硬检查）</h3>
+    <ol>
+      <li>模拟盘连续稳定 >= 1 天。</li>
+      <li>确认 API 权限、交易账户资金、网络稳定。</li>
+      <li>确认已准备“紧急停机”流程（停止全部策略 + 撤单）。</li>
+    </ol>
+    <h3>步骤C2（1区）先保守再放开</h3>
+    <ol>
+      <li>开启余额压缩、名义上限、杠杆上限。</li>
+      <li>首日只用保守模板和小仓位。</li>
+      <li>无异常再切均衡模板。</li>
+    </ol>
+    <h3>步骤C3（3区+底栏）盯盘规则</h3>
+    <ol>
+      <li>重点盯“挂单是否积压”和“撤单是否失败”。</li>
+      <li>连续异常先停，不在异常状态下硬调参数。</li>
+    </ol>
+  </div>
+
+  <h2>4. 全策略推荐初始参数模板（保守 / 均衡 / 激进）</h2>
+  <p class="tip">一句话：模板就是“默认起跑线”，先保守跑稳，再逐步切到均衡/激进，别一上来就激进。</p>
+  <div class="card">
+    <h3>4.1 PMM</h3>
+    <ul>
+      <li>保守：<code>spread_bps=50</code>，<code>refresh_ticks=8</code>，<code>order_size=0.001</code></li>
+      <li>均衡：<code>spread_bps=30</code>，<code>refresh_ticks=5</code>，<code>order_size=0.002</code></li>
+      <li>激进：<code>spread_bps=18</code>，<code>refresh_ticks=3</code>，<code>order_size=0.003</code></li>
+    </ul>
+
+    <h3>4.2 PMM+</h3>
+    <ul>
+      <li>保守：<code>spread=45</code>，<code>refresh=8</code>，<code>max_inventory=0.005</code>，<code>slippage_pct=0.30</code></li>
+      <li>均衡：<code>spread=28</code>，<code>refresh=5</code>，<code>max_inventory=0.010</code>，<code>slippage_pct=0.50</code></li>
+      <li>激进：<code>spread=18</code>，<code>refresh=3</code>，<code>max_inventory=0.015</code>，<code>slippage_pct=0.80</code></li>
+    </ul>
+
+    <h3>4.3 PMM-NEURAL</h3>
+    <ul>
+      <li>保守：<code>spread=40</code>，<code>refresh=8</code>，<code>order_size=0.001</code>，<code>use_talib=off</code></li>
+      <li>均衡：<code>spread=25</code>，<code>refresh=5</code>，<code>order_size=0.002</code>，<code>use_talib=on</code></li>
+      <li>激进：<code>spread=16</code>，<code>refresh=3</code>，<code>order_size=0.003</code>，<code>use_talib=on</code></li>
+    </ul>
+
+    <h3>4.4 AI-LIVE</h3>
+    <ul>
+      <li>保守：<code>ai_interval=45</code>，<code>max_notional=15</code>，<code>min_conf=0.70</code>，<code>depth_frac=0.20</code></li>
+      <li>均衡：<code>ai_interval=30</code>，<code>max_notional=30</code>，<code>min_conf=0.55</code>，<code>depth_frac=0.30</code></li>
+      <li>激进：<code>ai_interval=15</code>，<code>max_notional=60</code>，<code>min_conf=0.45</code>，<code>depth_frac=0.40</code></li>
+    </ul>
+
+    <h3>4.5 AI-ALGO（承载策略）</h3>
+    <ul>
+      <li>保守：优先 <code>rule_based</code>，动作少、频率低、单笔名义低。</li>
+      <li>均衡：<code>rule_based + parameter_optimize</code> 组合，手动审核后上线。</li>
+      <li>激进：<code>python_code</code> 仅建议模拟盘长测后实盘。</li>
+    </ul>
+
+    <h3>4.6 GRID</h3>
+    <ul>
+      <li>保守：<code>band=0.8%</code>，<code>levels=5</code>，<code>size=0.001</code>，<code>refresh=45s</code></li>
+      <li>均衡：<code>band=1.2%</code>，<code>levels=7</code>，<code>size=0.002</code>，<code>refresh=30s</code></li>
+      <li>激进：<code>band=2.0%</code>，<code>levels=9</code>，<code>size=0.003</code>，<code>refresh=20s</code></li>
+    </ul>
+
+    <h3>4.7 DCA</h3>
+    <ul>
+      <li>保守：<code>interval=600s</code>，<code>size=0.001</code></li>
+      <li>均衡：<code>interval=300s</code>，<code>size=0.002</code></li>
+      <li>激进：<code>interval=120s</code>，<code>size=0.003</code></li>
+    </ul>
+
+    <h3>4.8 TWAP</h3>
+    <ul>
+      <li>保守：<code>total=0.01</code>，<code>slices=20</code>，<code>interval=60s</code></li>
+      <li>均衡：<code>total=0.02</code>，<code>slices=12</code>，<code>interval=30s</code></li>
+      <li>激进：<code>total=0.03</code>，<code>slices=8</code>，<code>interval=15s</code></li>
+    </ul>
+
+    <h3>4.9 ARBITRAGE（监控型）</h3>
+    <ul>
+      <li>保守：<code>threshold=30bps</code>，<code>interval=20s</code></li>
+      <li>均衡：<code>threshold=20bps</code>，<code>interval=15s</code></li>
+      <li>激进：<code>threshold=12bps</code>，<code>interval=8s</code></li>
+    </ul>
+
+    <h3>4.10 TREND（占位）</h3>
+    <p class="warn">当前仍为占位策略，三档模板仅供将来扩展，不建议实盘启用。</p>
+  </div>
+
+  <h2>4.5 真盘交易开启（重点新增）</h2>
+  <p class="tip">一句话：真盘=顶栏切实盘 + 系统配置取消模拟 + 选“已接入实单策略”启动；选错策略会被保护拦住。</p>
+  <div class="card">
+    <h3>4.5.1 开启实盘的标准流程</h3>
+    <ol>
+      <li>顶栏把模式切到 <code>实盘</code>（会弹二次确认）。</li>
+      <li>进入 <code>文件 → 系统配置</code>，填实盘 API，取消“模拟交易”勾选，测试连接成功后保存。</li>
+      <li>1区选择“已接入实单”的策略，再点 <code>启动策略</code>。</li>
+      <li>到3区挂单页确认真实挂单变化，到底栏确认下单/撤单回报。</li>
+    </ol>
+    <h3>4.5.2 当前可实单策略与限制</h3>
+    <ul>
+      <li>可实单：<code>PMM</code>、<code>PMM+</code>、<code>PMM-NEURAL</code>、<code>AI-LIVE</code>、<code>TWAP</code>、<code>GRID</code>、<code>DCA</code>。</li>
+      <li><code>ARBITRAGE</code>：当前仅日志监控。</li>
+      <li><code>AI-ALGO</code>：当前会弹“策略未接入”，不走真实下单通道。</li>
+      <li><code>TREND</code>：占位策略，不建议实盘。</li>
+    </ul>
+    <h3>4.5.3 你截图弹窗的含义</h3>
+    <p>当你选择 <code>AI-ALGO</code> 并启动时，系统会提示“当前仅为代码骨架，不会产生真实订单”。这是保护机制，不是报错。</p>
+    <h3>4.5.4 如果你要 AI 真盘</h3>
+    <ul>
+      <li>当前建议用 <code>AI-LIVE</code>：工具菜单开启“启用 AI 实盘决策（AI-LIVE）”，然后1区切 <code>AI-LIVE</code> 启动。</li>
+      <li>先用保守模板：<code>ai_interval=45</code>、<code>max_notional=15</code>、<code>min_conf=0.70</code>。</li>
+    </ul>
+  </div>
+
+  <h2>4.6 实时盯盘操作（看得懂、用得上）</h2>
+  <p class="tip">一句话：盯盘=确保行情在刷新（2区在动）+ 盯挂单与撤单（3区）+ 异常就按 SOP 先停再查。</p>
+  <div class="card">
+    <h3>4.6.1 盯盘前置条件（不满足就先别盯）</h3>
+    <ul>
+      <li><b>2区必须在动</b>：实时价格有变化、K线不冻结。</li>
+      <li><b>顶栏连接要正常</b>：连接状态不是长期“—”，延迟不持续异常。</li>
+      <li>如果不动：先检查代理（顶栏“应用”）或到 <code>文件 → 系统配置</code> 点“测试连接/保存”。</li>
+    </ul>
+
+    <h3>4.6.2 盯盘时“看哪里”（按区域）</h3>
+    <ul>
+      <li><b>2区（中）看</b>：价格跳动、K线刷新、状态线是否异常。</li>
+      <li><b>3区（右）看</b>：当前挂单是否积压、撤单是否失败、订单簿是否异常跳变。</li>
+      <li><b>底栏看</b>：是否出现连续重复报错（连续3次算异常）。</li>
+    </ul>
+
+    <h3>4.6.3 盯盘时“怎么操作”（最常用 6 个动作）</h3>
+    <ol>
+      <li><b>只停当前交易对</b>：在 1区 点 <code>停止并撤单</code>。</li>
+      <li><b>紧急总停</b>：在 3区“当前挂单”页点 <code>停止全部策略</code>。</li>
+      <li><b>快速撤单</b>：在 3区点 <code>一键撤单</code>（或“撤全部”）。</li>
+      <li><b>手动补单/纠偏</b>：在 3区“快捷下单”输入价格/数量，点买入/卖出。</li>
+      <li><b>换交易对盯盘</b>：顶栏改交易对后，先观察 1~2 分钟确认刷新正常再操作。</li>
+      <li><b>调参纪律</b>：一次只改 1~2 个参数，改完至少观察 20~30 分钟再继续。</li>
+    </ol>
+
+    <h3>4.6.4 盯盘的“成功标准”</h3>
+    <ul>
+      <li>2区行情一直在刷新。</li>
+      <li>3区挂单能增删变化，撤单大多数能成功。</li>
+      <li>底栏没有持续刷屏的同类报错。</li>
+    </ul>
+
+    <h3>4.6.5 盯盘异常怎么处理（直接照做）</h3>
+    <ul>
+      <li><b>P1（严重）</b>：先 <code>停止全部策略</code> → <code>一键撤单</code> → 切模拟盘 → 导出/截图日志。</li>
+      <li><b>P2（中等）</b>：先降风险：提高 <code>refresh_ticks</code>、提高 <code>min_confidence</code>、降低 <code>max_notional</code>。</li>
+      <li><b>P3（轻微）</b>：先观察记录，别立刻大改参数。</li>
+    </ul>
+
+    <h3>4.6.6 最容易踩坑（你截图那种）</h3>
+    <ul>
+      <li>选了 <code>AI-ALGO</code> 会提示“策略未接入”，不会走真实下单通道，所以你盯不到“真实成交动作”。</li>
+      <li>要 AI 真盘盯盘并自动决策：用 <code>AI-LIVE</code>（并开启“启用 AI 实盘决策”）。</li>
+    </ul>
+  </div>
+
+  <h2>5. 逐控件字典（你点到哪，都知道干什么）</h2>
+  <p class="tip">一句话：不知道下一步点哪里，就按“顶栏换品种/模式，1区启停与参数，3区下单与撤单，底栏查报错”。</p>
+  <div class="card">
+    <h3>5.1 顶栏</h3>
+    <ul>
+      <li><code>交易对</code>：决定行情、挂单、策略 instId；切换后建议重新观察 1~2 分钟。</li>
+      <li><code>模式</code>：模拟/实盘；切实盘会弹确认框。</li>
+      <li><code>代理输入 + 应用</code>：运行时临时改网络出口，输入错误会提示。</li>
+      <li><code>AI状态</code>：off/analyzing/ok/error/paused。</li>
+      <li><code>连接状态</code>：REST 延迟与连接状态。</li>
+    </ul>
+    <h3>5.2 1区按钮</h3>
+    <ul>
+      <li><code>启动策略</code>：按当前参数实例化并启动。</li>
+      <li><code>停止并撤单</code>：停止当前交易对并撤挂单。</li>
+      <li><code>预设下拉</code>：快速套参数（保守/均衡/激进）。</li>
+    </ul>
+    <h3>5.3 3区按钮</h3>
+    <ul>
+      <li><code>买入/卖出</code>：快捷限价单。</li>
+      <li><code>撤全部</code>：当前交易对撤单。</li>
+      <li><code>一键撤单</code>：挂单页全撤。</li>
+      <li><code>停止全部策略</code>：全局总停。</li>
+    </ul>
+  </div>
+
+  <h2>6. 菜单功能逐项详解</h2>
+  <p class="tip">一句话：文件=配置；工具=AI/预设/模板/总停；帮助=说明与关于。</p>
+  <div class="card">
+    <h3>6.1 文件菜单</h3>
+    <ul>
+      <li><code>系统配置</code>：API、代理、模型、余额保护、杠杆。</li>
+      <li><code>退出</code>：会触发策略停止与线程关闭。</li>
+    </ul>
+    <h3>6.2 工具菜单</h3>
+    <ul>
+      <li><code>启用 AI 实盘决策（AI-LIVE）</code>：写入 <code>AI_LIVE_ENABLED</code>。</li>
+      <li><code>AI 策略助手</code>：给 PMM/PMM+ 参数建议。</li>
+      <li><code>AI 算法生成与执行</code>：生成并校验算法文档（手动审核）。</li>
+      <li><code>运行预设</code>：快速设置做市节奏。</li>
+      <li><code>停止全部策略</code>：总停 + 撤单。</li>
+      <li><code>导出/导入策略模板</code>：参数文件化管理。</li>
+    </ul>
+    <h3>6.3 帮助菜单</h3>
+    <ul>
+      <li><code>使用说明</code>：打开本手册。</li>
+      <li><code>关于</code>：版本与功能定位说明。</li>
+    </ul>
+  </div>
+
+  <h2>7. 操作脚本（开机到停机）</h2>
+  <p class="tip">一句话：把操作当成“流程”，按顺序做，别跳步；这样出问题也更容易定位。</p>
+  <div class="card">
+    <ol>
+      <li>开机：检查代理和 API 连接。</li>
+      <li>运行前：顶栏选交易对，1区确认模板。</li>
+      <li>运行中：2区看行情、3区看挂单、底栏看错误。</li>
+      <li>调参：一次只改 1~2 个参数，避免无法归因。</li>
+      <li>停机：先“停止策略”，再确认挂单清空。</li>
+      <li>复盘：导出模板、记录当日参数和异常时间点。</li>
+    </ol>
+  </div>
+
+  <h2>8. 参数词典（定义 / 范围 / 默认 / 调参影响 / 误配 / 修正）</h2>
+  <p class="tip">一句话：你只要记住“范围别越界、一次只改1~2个、改完观察”，就不会越调越乱。</p>
+  <div class="card">
+    <h3>8.1 PMM / PMM+ / PMM-NEURAL 核心</h3>
+    <ul>
+      <li><code>spread_bps</code>：定义=总价差；范围=1~2000；默认=20。调大：成交变慢但更稳；调小：成交更快但滑点风险升。误配：过小导致高频撤单。修正：先回到 30~50。</li>
+      <li><code>order_size</code>：定义=单笔数量；范围=大于0；默认=0.001。调大：收益/风险同步放大；调小：更稳更慢。误配：过大触发保证金不足。修正：先减半并观察 30 分钟。</li>
+      <li><code>refresh_ticks</code>：定义=刷新秒数；范围=1~3600（GRID 最低建议 5）；默认=3。调大：撤单少更稳；调小：更灵活但更容易限频。误配：太小导致撤单失败增多。修正：调到 5~10。</li>
+      <li><code>max_inventory</code>（PMM+）：定义=净持仓上限；范围>0；默认=0.01。调大：库存风险上升；调小：更保守。误配：太大导致单边持仓积累。修正：先设 0.005~0.01。</li>
+      <li><code>slippage_pct</code>（PMM+）：定义=可接受滑点%；范围=0.01~10；默认=0.5。调大：更易成交但成本上升；调小：更保守但可能挂单难成交。误配：太大追价。修正：回 0.3~0.8。</li>
+    </ul>
+
+    <h3>8.2 AI-LIVE 核心</h3>
+    <ul>
+      <li><code>ai_interval_sec</code>：定义=AI调用间隔；范围=5~7200；默认=30。调大：成本低更稳；调小：响应快但抖动增。误配：过小导致频繁调用。修正：先 30~60。</li>
+      <li><code>max_notional_usdt</code>：定义=单笔名义上限；范围=1~1e7；默认=30。调大：风险放大；调小：更安全。误配：过大导致连续亏损放大。修正：先 15~30。</li>
+      <li><code>min_confidence</code>：定义=最低置信度；范围=0~1；默认=0.5。调大：过滤更多信号；调小：交易更频繁。误配：太低导致噪音单。修正：设 0.55~0.70。</li>
+      <li><code>price_band_pct</code>：定义=相对中间价偏离上限%；范围=0.05~50；默认=0.5。调大：允许更远挂价；调小：更贴盘。误配：太大导致成交价劣化。修正：0.3~1.0。</li>
+      <li><code>ai_depth_frac</code>：定义=单笔占对手一档深度比例；范围=0.05~1；默认=0.30。调大：成交更快但冲击更大；调小：更平滑。误配：太大吃穿盘口。修正：0.2~0.35。</li>
+      <li><code>ai_slip_bps</code>：定义=盘口放宽基点；范围=0~50；默认=1。调大：更易成交但成本增；调小：更严。误配：过高引起追价。修正：1~5。</li>
+      <li><code>ai_fill_conf_market</code>：定义=低置信度改市价阈值；范围=0~1；默认=0.8。调大：更少市价；调小：更多市价。误配：过低导致市价过多。修正：0.75~0.9。</li>
+    </ul>
+
+    <h3>8.3 GRID / DCA / TWAP / ARBITRAGE</h3>
+    <ul>
+      <li><code>grid_band_pct</code>：定义=网格带宽；范围=0.2~25；默认=1.0。调大：覆盖更宽；调小：更密集。误配：太窄导致频繁重挂。修正：先 0.8~1.5。</li>
+      <li><code>grid_levels</code>：定义=网格档位数；范围=3~21；默认=7。调大：挂单更密；调小：更稀疏。误配：过大导致管理压力升。修正：5~9。</li>
+      <li><code>dca_interval_sec</code>：定义=定投间隔；范围=10~86400；默认=120。调大：交易更慢；调小：更密集。误配：过小在波动时追涨。修正：120~600。</li>
+      <li><code>twap_slices</code>：定义=拆单笔数；范围=2~500；默认=10。调大：冲击更低；调小：执行更快。误配：太小冲击大。修正：8~20。</li>
+      <li><code>arb_threshold_bps</code>：定义=套利提示阈值；范围=1~500；默认=15。调大：信号更少；调小：噪音更多。误配：太小告警刷屏。修正：15~30。</li>
+    </ul>
+  </div>
+
+  <h2>9. 参数联动图谱（调参决策树）</h2>
+  <p class="tip">一句话：先按“症状→调参顺序”走，别凭感觉乱改；越乱改越难恢复。</p>
+  <div class="card">
+    <h3>9.1 症状 -> 调参顺序（先后有严格顺序）</h3>
+    <ul>
+      <li><b>症状A：成交太少</b> -> 先降 <code>spread_bps</code> -> 再降 <code>refresh_ticks</code> -> 最后小幅提 <code>order_size</code>。</li>
+      <li><b>症状B：撤单失败/限频多</b> -> 先升 <code>refresh_ticks</code> -> 再升 <code>spread_bps</code> -> 暂不动 <code>order_size</code>。</li>
+      <li><b>症状C：保证金不足/51008</b> -> 先降 <code>max_notional_usdt</code> 或 <code>order_size</code> -> 开余额压缩 -> 再降杠杆上限。</li>
+      <li><b>症状D：AI单质量差</b> -> 先升 <code>min_confidence</code> -> 再升 <code>ai_interval_sec</code> -> 再降 <code>ai_depth_frac</code>。</li>
+      <li><b>症状E：成交价格劣化</b> -> 先降 <code>ai_slip_bps</code> -> 再降 <code>price_band_pct</code> -> 必要时提高 <code>min_confidence</code>。</li>
+      <li><b>症状F：网格来回打脸</b> -> 先增 <code>grid_band_pct</code> -> 再减 <code>grid_levels</code> -> 观察后再调 <code>size</code>。</li>
+    </ul>
+
+    <h3>9.2 参数联动关系（核心）</h3>
+    <ul>
+      <li><code>spread_bps ↓</code> 通常要配 <code>refresh_ticks ↑</code> 或 <code>order_size ↓</code>，否则撤单压力激增。</li>
+      <li><code>order_size ↑</code> 需同步 <code>max_notional_usdt ↓</code> 或 <code>ai_depth_frac ↓</code>，避免一次吃深度。</li>
+      <li><code>ai_interval_sec ↓</code> 需配 <code>min_confidence ↑</code>，否则低质量信号过多。</li>
+      <li><code>grid_levels ↑</code> 需配 <code>grid_band_pct ↑</code>，否则网格过密导致重挂频繁。</li>
+      <li><code>twap_slices ↑</code> 时可适度 <code>interval ↓</code>，但总时长不要过长（影响执行完成率）。</li>
+    </ul>
+
+    <h3>9.3 禁止同时大改的组合</h3>
+    <ul>
+      <li>不要同时：<code>spread_bps 大幅下调</code> + <code>refresh_ticks 大幅下调</code> + <code>order_size 上调</code>。</li>
+      <li>不要同时：<code>ai_interval_sec 下调</code> + <code>min_confidence 下调</code> + <code>max_notional 上调</code>。</li>
+      <li>不要同时：<code>grid_band_pct 下调</code> + <code>grid_levels 上调</code>（会过密）。</li>
+    </ul>
+
+    <h3>9.4 单次调参纪律（强制）</h3>
+    <ul>
+      <li>单次最多改 1~2 个参数。</li>
+      <li>每次改完至少观察 20~30 分钟（高频策略）或 1~2 小时（慢频策略）。</li>
+      <li>记录“改前值/改后值/异常是否减少”，再进入下一轮。</li>
+    </ul>
+  </div>
+
+  <h2>10. 每一步界面定位速查（1-2-3区）</h2>
+  <p class="tip">一句话：改参数=1区；看行情=2区；看挂单/下单=3区；换模式/代理=顶栏；查报错=底栏。</p>
+  <div class="card">
+    <ul>
+      <li>改策略参数：去 <b>1区</b></li>
+      <li>看行情/切K线周期：去 <b>2区</b></li>
+      <li>看订单簿/挂单/快捷下单：去 <b>3区</b></li>
+      <li>换交易对/模式/代理：去 <b>顶栏</b></li>
+      <li>查报错关键字：去 <b>底栏日志</b></li>
+    </ul>
+  </div>
+
+  <h2>11. 风控与故障排查（上线前必读）</h2>
+  <p class="warn">一句话：遇到异常先停机再排查；不要在异常状态下“边跑边改”。</p>
+  <div class="card">
+    <h3>9.1 风控四原则</h3>
+    <ul>
+      <li>先模拟后实盘。</li>
+      <li>先保守后均衡再激进。</li>
+      <li>先止损再收益，先活下来。</li>
+      <li>先停机再排障，别带病运行。</li>
+    </ul>
+    <h3>9.2 常见错误速修</h3>
+    <ul>
+      <li>出现 <code>51008</code>：降低名义、开启余额压缩。</li>
+      <li>AI失败：检查 <code>AI_API_BASE / AI_MODEL / AI_API_KEY</code> 或改本地模式。</li>
+      <li>K线不动：检查顶栏连接状态与代理可达性。</li>
+      <li>连续撤单失败：检查网络、交易对、权限、限频。</li>
+      <li>策略启动即停：参数越界或风控触发，先看底栏日志关键字。</li>
+    </ul>
+  </div>
+
+  <h2>12. 值班排障SOP（P1 / P2 / P3）</h2>
+  <p class="tip">一句话：P1先止损（停+撤）；P2先降风险参数；P3先观察记录，别乱动。</p>
+  <div class="card">
+    <h3>P1（严重）：资金或风控高风险</h3>
+    <ul>
+      <li>判定标准：连续下单异常、保证金告警持续、异常成交放大、策略失控。</li>
+      <li>5分钟应急：<code>停止全部策略</code> -> <code>一键撤单</code> -> 切模拟盘 -> 截图/导出日志。</li>
+      <li>30分钟恢复：核查 API 权限与账户余额，回滚到保守模板，单策略小仓位重启验证。</li>
+      <li>当日禁令：未完成复盘前，禁止恢复激进参数。</li>
+    </ul>
+    <h3>P2（中等）：功能可用但质量下降</h3>
+    <ul>
+      <li>判定标准：撤单失败升高、AI信号质量下降、成交价格劣化。</li>
+      <li>5分钟应急：提高 <code>refresh_ticks</code>、提高 <code>min_confidence</code>、降低 <code>max_notional</code>。</li>
+      <li>30分钟恢复：按“参数联动图谱”做单变量回测式调参并记录结果。</li>
+    </ul>
+    <h3>P3（轻微）：体验问题或偶发告警</h3>
+    <ul>
+      <li>判定标准：偶发网络抖动、偶发单次失败、日志轻微告警。</li>
+      <li>5分钟应急：观察不急改；确认连接恢复后再继续。</li>
+      <li>30分钟恢复：汇总出现时间点并做预防性阈值微调。</li>
+    </ul>
+  </div>
+
+  <h2>13. 值班检查清单（打勾版）</h2>
+  <p class="tip">一句话：这份清单是“执行纪律”，照着打勾能显著减少误操作与带病运行。</p>
+  <div class="card">
+    <h3>13.1 开盘前（启动前 5~10 分钟）</h3>
+    <ul>
+      <li><input type="checkbox" disabled> 顶栏模式正确（模拟/实盘）</li>
+      <li><input type="checkbox" disabled> 交易对正确（例：ETH-USDT-SWAP）</li>
+      <li><input type="checkbox" disabled> 连接状态正常（REST 延迟不持续飙高）</li>
+      <li><input type="checkbox" disabled> 代理（如需要）已应用且可用</li>
+      <li><input type="checkbox" disabled> 系统配置已保存，API 权限正确（实盘/模拟匹配）</li>
+      <li><input type="checkbox" disabled> 选用保守/均衡/激进模板已确认（首日建议保守）</li>
+      <li><input type="checkbox" disabled> 紧急停机路径已确认（停止全部策略 + 一键撤单）</li>
+    </ul>
+
+    <h3>13.2 盘中（每 30 分钟巡检一次）</h3>
+    <ul>
+      <li><input type="checkbox" disabled> 2区行情还在刷新（价格/K线不冻结）</li>
+      <li><input type="checkbox" disabled> 3区挂单不积压（撤单失败不过多）</li>
+      <li><input type="checkbox" disabled> 底栏无“连续重复报错”（连续3次算异常）</li>
+      <li><input type="checkbox" disabled> 风控参数未被随意大改（单次最多改 1~2 个）</li>
+      <li><input type="checkbox" disabled> 账户可用余额/保证金状态正常（无持续 51008）</li>
+    </ul>
+
+    <h3>13.3 收盘后（停机与归档）</h3>
+    <ul>
+      <li><input type="checkbox" disabled> 停止策略（或停止全部策略）</li>
+      <li><input type="checkbox" disabled> 一键撤单确认挂单清零</li>
+      <li><input type="checkbox" disabled> 导出今日有效模板（如有优化）</li>
+      <li><input type="checkbox" disabled> 记录异常时间点与处理动作（用于复盘）</li>
+      <li><input type="checkbox" disabled> 如为实盘：确认无遗留仓位/挂单（按你的风控要求）</li>
+    </ul>
+    <p class="tip">提示：清单是“执行纪律”，能显著减少带病运行与误操作。</p>
+  </div>
+
+  <h2>14. 当日复盘模板（可复制）</h2>
+  <p class="tip">一句话：复盘只做三件事——记录改了什么、发生了什么、下次怎么避免。</p>
+  <div class="card">
+    <p><code>日期/交易对/策略：</code></p>
+    <p><code>今日参数变更：</code>（改前 -> 改后）</p>
+    <p><code>异常事件：</code>（时间、级别P1/P2/P3、现象）</p>
+    <p><code>应急动作：</code>（5分钟做了什么）</p>
+    <p><code>恢复动作：</code>（30分钟做了什么）</p>
+    <p><code>结果：</code>（是否恢复、是否回滚）</p>
+    <p><code>次日计划：</code>（继续观察/回退/放开）</p>
+  </div>
+
+  <h2>15. 导出与归档建议</h2>
+  <p class="tip">一句话：HTML给人看，Markdown给团队维护，TXT给快速分享；每天把模板和异常片段归档。</p>
+  <div class="card">
+    <ul>
+      <li>导出 <code>HTML</code>：适合团队阅读与打印。</li>
+      <li>导出 <code>Markdown</code>：适合版本管理与二次编辑。</li>
+      <li>导出 <code>TXT</code>：适合轻量分享。</li>
+      <li>建议每天归档：模板文件 + 当日日志关键片段。</li>
+    </ul>
+  </div>
+
+  <h2>16. 新增功能超详细教程（小白一看就会）</h2>
+  <p class="tip">一句话：主界面负责“交易操作”，AI 指挥中心负责“过程解释”。看不懂就先按本章从 16.1 到 16.8 走一遍。</p>
+
+  <div class="card">
+    <h3>16.1 新增了什么（先建立全局认知）</h3>
+    <ul>
+      <li><b>品牌统一</b>：软件名统一为 <code>LeiTingQuantPro</code>（窗口标题、顶栏品牌、手册导出名、日报名等）。</li>
+      <li><b>Logo 接入</b>：应用图标/托盘图标统一使用你提供的 logo（优先 <code>assets/logo.png</code>）。</li>
+      <li><b>AI 指挥中心独立窗口</b>：把“过程展示”从主界面迁出，主界面更干净。</li>
+      <li><b>多镜头 + 时间线高亮</b>：主镜头/风控镜头/执行镜头轮播，并自动定位对应事件。</li>
+      <li><b>小人工作流可视化</b>：时间线内置顶“工位动画”，持续显示当前角色正在做什么。</li>
+      <li><b>可解释证据链</b>：每条事件都有“解释/经过/角色/原因”，不是只给技术词。</li>
+      <li><b>副屏锁定</b>：可从工具菜单开启“AI 指挥中心锁定到副屏”。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>16.2 从哪里打开 AI 指挥中心（一步一步）</h3>
+    <ol>
+      <li>点击顶部菜单 <code>工具</code>。</li>
+      <li>点击 <code>打开 AI 指挥中心窗口…</code>。</li>
+      <li>若你有副屏：再点 <code>工具 → AI 指挥中心：锁定到副屏（开/关）</code>。</li>
+      <li>如果关闭软件重开后窗口位置变化：这是正常现象，可再次点“锁定到副屏”。</li>
+    </ol>
+    <p class="warn">注意：主界面不再承载“指挥中心大段演示内容”，这是刻意设计，防止交易页面过载。</p>
+  </div>
+
+  <div class="card">
+    <h3>16.3 AI 指挥中心每一行怎么读（逐行解释）</h3>
+    <ul>
+      <li><code>总览</code>：显示交易对、策略名、当前状态、最新提示信息。</li>
+      <li><code>当前在做什么</code>：把技术状态（如 waiting/deciding）翻译成人话。</li>
+      <li><code>管线</code>：<code>预热→采集→模型→解析→过滤→风控→下单→回报</code>，当前步骤会高亮。</li>
+      <li><code>产业线</code>：显示整条流程工位和状态灯（G=忙碌、Y=已过站、R=待处理）。</li>
+      <li><code>办公室小人</code>：显示当前角色（运维员/行情员/建模师/风控官/交易员…）及动作。</li>
+      <li><code>多镜头</code>：切换“主镜头/风控镜头/执行镜头”，用于不同维度盯盘。</li>
+      <li><code>导演旁白</code>：把当前阶段转成一句场景化描述，方便向非技术同事解释。</li>
+      <li><code>战术建议</code>：根据当前阶段给操作建议（降速/校准/执行跟踪等）。</li>
+      <li><code>时间线</code>：按时间记录 AI 事件，自动高亮最关键条目。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>16.4 为什么“AI 没工作时”会隐藏很多内容（不是坏了）</h3>
+    <ul>
+      <li>当策略不是 <code>AI-LIVE</code>，或状态为 <code>idle</code> 且无事件流时，指挥中心会自动收起高级演示块。</li>
+      <li>这样做的目的是避免误导用户“看起来很忙但实际没在决策”。</li>
+      <li>恢复显示的方法：切到 <code>AI-LIVE</code>，勾选启用 AI 实盘决策，启动策略，等待事件流出现。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>16.5 预热/采集为什么会慢（如何在界面上看懂）</h3>
+    <ul>
+      <li>预热慢的核心：需要先收集 <code>warmup_snapshots</code> 条有效快照，才能进入模型环节。</li>
+      <li>采集慢的核心：盘口/ticker/candles 任一缺失或超时，都会导致“快照不完整”。</li>
+      <li>现在时间线“原因”会显示：缺少了哪些数据项（如 <code>orderbook</code> / <code>ticker</code> / <code>candles_1m</code>）。</li>
+      <li>还会显示预热进度和估计剩余时间，帮助你判断是“正常等待”还是“网络异常”。</li>
+    </ul>
+    <p class="tip">新手建议：先把 <code>warmup_snapshots</code> 设小（如3），<code>ai_interval_sec</code> 设 10~15，验证流程跑通后再回归稳健值。</p>
+  </div>
+
+  <div class="card">
+    <h3>16.6 时间线怎么用来定位问题（实操模板）</h3>
+    <ol>
+      <li>先看最后一条事件的 <code>stage</code>（停在哪一步）。</li>
+      <li>再看该条下面的 <b>原因</b>（缺数据/风控拦截/置信度不足/异常）。</li>
+      <li>看“经过链路”是否反复在同一个区间循环（例如一直预热->采集）。</li>
+      <li>若出现 <code>ordId</code> 相关事件，可回主界面挂单表对应核对。</li>
+      <li>若连续出现同类失败，按第12章 SOP 执行：先降风险或先停再查。</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>16.7 三种常见误解（直接给结论）</h3>
+    <ul>
+      <li><b>误解1：</b>“没看到花里胡哨，就是 AI 没跑。”<br>纠正：看状态、时间线和原因，不看特效数量。</li>
+      <li><b>误解2：</b>“显示 waiting 就是卡死。”<br>纠正：通常是等待下一轮或预热未满；先看“原因”和剩余时间。</li>
+      <li><b>误解3：</b>“主界面没显示 NOC 内容是不是丢了。”<br>纠正：内容已迁移到独立 AI 指挥中心，主界面故意简洁。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>16.8 5 分钟快速上手脚本（给新同事）</h3>
+    <ol>
+      <li>打开软件，确认顶栏交易对正确，模式先模拟盘。</li>
+      <li>打开 <code>工具 → 打开 AI 指挥中心窗口</code>。</li>
+      <li>1区选 <code>AI-LIVE</code>，勾选启用 AI 实盘决策（先模拟环境验证流程）。</li>
+      <li>点“启动策略”，观察指挥中心“总览 + 当前在做什么 + 时间线原因”。</li>
+      <li>若提示缺数据：优先检查代理与连接状态；若风控拦截：按建议降速/降名义。</li>
+      <li>确认流程跑通后，再进入实盘前检查清单（第13章）。</li>
+    </ol>
+  </div>
+
+  <h2>17. 授权与联系（新增）</h2>
+  <p class="tip">一句话：交易软件与授权工具分离；激活码按时长授权；工具授权为一次性。</p>
+  <div class="card">
+    <h3>17.1 开发商联系方式（统一）</h3>
+    <ul>
+      <li><b>开发商邮箱：</b><code>leitingquant@126.com</code></li>
+      <li>遇到安装失败/激活失败/环境检测报错，请附上：错误截图 + 时间 + 机器信息 + 日志关键片段。</li>
+    </ul>
+
+    <h3>17.2 激活码时长类型（交易软件）</h3>
+    <ul>
+      <li><code>小时</code>：适合短时测试或培训演示。</li>
+      <li><code>天</code>：适合短周期试运行。</li>
+      <li><code>周</code>：适合策略观察期。</li>
+      <li><code>月</code>：适合常规订阅。</li>
+      <li><code>季</code>：适合稳定使用周期。</li>
+      <li><code>年</code>：适合长期连续运行。</li>
+      <li><code>永久</code>：长期授权，不受时长限制。</li>
+    </ul>
+
+    <h3>17.3 工具授权规则（独立软件）</h3>
+    <ul>
+      <li>授权工具（如激活码生成器/授权管理器）与交易软件分开打包、分开安装。</li>
+      <li>工具授权为<b>一次性使用</b>（单码单次消费），防止重复滥用。</li>
+      <li>交易软件内仅做“授权状态读取与提示”，不内嵌工具端逻辑。</li>
+    </ul>
+
+    <h3>17.4 首次安装建议流程（用户视角）</h3>
+    <ol>
+      <li>先运行安装程序，完成环境检测与缺失依赖安装。</li>
+      <li>安装主软件后首次启动，输入时长激活码完成授权。</li>
+      <li>若激活失败，先检查系统时间/时区，再联系开发商邮箱处理。</li>
+    </ol>
+  </div>
+
+  <p class="tip">本手册已包含：通俗速读版、分级教程、区域编号、全策略模板、参数词典、联动决策树、值班排障SOP、值班检查清单。</p>
+</body>
+</html>

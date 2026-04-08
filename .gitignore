@@ -1,0 +1,9 @@
+config/.env
+config/risk_daily_equity.json
+config/LAST_SAVE.txt
+logs/
+data/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
